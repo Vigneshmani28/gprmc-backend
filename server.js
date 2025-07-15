@@ -37,10 +37,10 @@ function interpolateCoords(start, end, steps) {
   return points;
 }
 
-function generateGprmc(device, baseTime, index, lat, lon, speed = 60.0, heading = 0.0) {
-  const timestamp = new Date(baseTime.getTime() + index * 10000);
-  const hhmmss = timestamp.toTimeString().slice(0, 8).replace(/:/g, '');
-  const ddmmyy = timestamp.toLocaleDateString('en-GB').split('/').join('');
+function generateGprmc(device, index, lat, lon, speed = 60.0, heading = 0.0) {
+  const now = new Date(Date.now() + index * 10000); // 10 seconds apart
+  const hhmmss = now.toISOString().substr(11, 8).replace(/:/g, '');
+  const ddmmyy = now.toISOString().substr(2, 8).replace(/-/g, '').slice(0, 6);
 
   const { value: latVal, direction: latDir } = toGprmcCoords(lat, true);
   const { value: lonVal, direction: lonDir } = toGprmcCoords(lon, false);
@@ -52,7 +52,6 @@ function generateGprmc(device, baseTime, index, lat, lon, speed = 60.0, heading 
 
 app.post('/generate', async (req, res) => {
   const { from, to, count, device } = req.body;
-  const baseTime = new Date();
   const coords = interpolateCoords(from, to, count);
 
   const workbook = new ExcelJS.Workbook();
@@ -61,7 +60,7 @@ app.post('/generate', async (req, res) => {
 
   coords.forEach((point, index) => {
     const heading = 10 + Math.sin(index / 150) * 5;
-    const gprmc = generateGprmc(device, baseTime, index, point[0], point[1], 60.0, heading);
+    const gprmc = generateGprmc(device, index, point[0], point[1], 60.0, heading);
     sheet.addRow({ gprmc });
   });
 
