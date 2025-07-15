@@ -38,8 +38,9 @@ function interpolateCoords(start, end, steps) {
 }
 
 function generateGprmc(device, baseTime, index, lat, lon, speed = 60.0, heading = 0.0) {
-  const timestamp = new Date(baseTime.getTime() + index * 10000); // 10 sec interval
-  
+  const utcTimestamp = new Date(baseTime.getTime() + index * 10000);
+  const timestamp = new Date(utcTimestamp.getTime() + (5.5 * 60 * 60 * 1000)); // Convert to IST
+
   const hh = String(timestamp.getHours()).padStart(2, '0');
   const mm = String(timestamp.getMinutes()).padStart(2, '0');
   const ss = String(timestamp.getSeconds()).padStart(2, '0');
